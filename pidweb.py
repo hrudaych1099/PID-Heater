@@ -160,8 +160,8 @@ if st.button("🚀 Run Simulation", type="primary"):
     ax.plot(history_time, history_dumb, 'r--', label=f'Normal Thermostat (Set {target_dumb}°C)', alpha=0.7) # Increased alpha for visibility
     ax.plot(history_time, history_pid, 'c-', label=f'Smart PID (Set {target_pid}°C)', linewidth=2) # Cyan is better than Blue on dark backgrounds
     ax.axhline(y=target_pid, color='g', linestyle=':', label='Comfort Zone')
-    ax.xlabel('Time (Minutes)')
-    ax.ylabel('Temperature (°C)')
+    ax.set_xlabel('Time (Minutes)')
+    ax.set_ylabel('Temperature (°C)')
     ax.legend(facecolor='#b9b9b9', labelcolor='white')
     ax.grid(True, alpha=0.3)
     money_saved = (kwh_dumb - kwh_pid) * cost_per_kwh * (30 * 24 / sim_hours) #for 1 monthh
@@ -176,6 +176,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
 
 
 
