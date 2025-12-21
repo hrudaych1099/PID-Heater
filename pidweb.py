@@ -66,7 +66,7 @@ with st.sidebar:
         Volume = st.number_input("Volume of Room (m³)", 0, 1000, 10)
         mass = Volume*1.225
         C_heat = mass*1005
-    st.write("Thermal Mass (C) is", C_heat,"J⋅K⁻¹",help="This is the Heat Capacity of the Room!")
+    st.metric(label="Thermal Mass (C)", value=f"{C_heat:.2f} J⋅K⁻¹")
     Thickness = st.number_input("Thickness of Wall (cm)", 0.0, 1000.0, 20.0, help="Assuming Uniform Thickness across the Room")
     walltype = st.selectbox("Wall Type", ["Burnt Clay Bricks", "Cement Bricks", "Custom"], help ="Choose Burnt Clay if it's those classic red bricks which were used :)")
     if walltype == "Burnt Clay Bricks":
@@ -77,7 +77,7 @@ with st.sidebar:
         R_thermal = st.number_input("Thermal Resistance/cm",0.0,10.0,0.1)
 
     R_insul = R_thermal*Thickness
-    st.write("Thermal Resistance is",R_insul,"m²·K/W")
+    st.metric(label="Thermal Resistance (R)", value=f"{R_insul:.2f} m²·K/W")
     T_ambient = st.number_input("Outside Temperature (°C)", -10.0, 20.0, 10.0)
     hours = st.number_input("Hours Run on Heater",0.0,24.0,6.0)
     cost_per_kwh = st.number_input("Electricity Cost (₹/kWh)", 0.0, 100.0, 2.0)
@@ -192,3 +192,4 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
