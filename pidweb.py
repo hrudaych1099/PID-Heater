@@ -66,7 +66,7 @@ with st.sidebar:
         Volume = st.number_input("Volume of Room (m³)", 0, 1000, 10)
         mass = Volume*1.225
         C_heat = mass*1005
-    st.metric(label="Thermal Mass (C)", value=f"{C_heat:.2f} J⋅K⁻¹")
+    st.metric(label="Thermal Mass (C) J⋅K⁻¹", value=f"{C_heat:.2f}")
     Thickness = st.number_input("Thickness of Wall (cm)", 0.0, 1000.0, 20.0, help="Assuming Uniform Thickness across the Room")
     walltype = st.selectbox("Wall Type", ["Burnt Clay Bricks", "Cement Bricks", "Custom"], help ="Choose Burnt Clay if it's those classic red bricks which were used :)")
     if walltype == "Burnt Clay Bricks":
@@ -192,4 +192,5 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
 
