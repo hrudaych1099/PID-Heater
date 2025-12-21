@@ -147,21 +147,21 @@ if st.button("🚀 Run Simulation", type="primary"):
     fig, ax = plt.subplots(figsize=(10, 5))
     fig.patch.set_alpha(0.0)
     ax.patch.set_alpha(0.0)
-    ax.spines['bottom'].set_color('#dddddd')
-    ax.spines['top'].set_color('#dddddd') 
-    ax.spines['right'].set_color('#dddddd')
-    ax.spines['left'].set_color('#dddddd')
-    ax.tick_params(axis='x', colors='#dddddd')
-    ax.tick_params(axis='y', colors='#dddddd')
-    ax.yaxis.label.set_color('#dddddd')
-    ax.xaxis.label.set_color('#dddddd')
-    ax.title.set_color('#dddddd')
+    ax.spines['bottom'].set_color('#403f3f')
+    ax.spines['top'].set_color('#403f3f') 
+    ax.spines['right'].set_color('#403f3f')
+    ax.spines['left'].set_color('#403f3f')
+    ax.tick_params(axis='x', colors='#403f3f')
+    ax.tick_params(axis='y', colors='#403f3f')
+    ax.yaxis.label.set_color('#403f3f')
+    ax.xaxis.label.set_color('#403f3f')
+    ax.title.set_color('#403f3f')
 
     ax.plot(history_time, history_dumb, 'r--', label=f'Normal Thermostat (Set {target_dumb}°C)', alpha=0.7) # Increased alpha for visibility
     ax.plot(history_time, history_pid, 'c-', label=f'Smart PID (Set {target_pid}°C)', linewidth=2) # Cyan is better than Blue on dark backgrounds
     ax.axhline(y=target_pid, color='g', linestyle=':', label='Comfort Zone')
 
-    ax.legend(facecolor='#262730', labelcolor='white')
+    ax.legend(facecolor='#403f3f', labelcolor='grey')
     ax.grid(True, alpha=0.3)
     money_saved = (kwh_dumb - kwh_pid) * cost_per_kwh * (30 * 24 / sim_hours) #for 1 monthh
     
@@ -175,6 +175,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
 
 
 
