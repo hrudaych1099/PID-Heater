@@ -73,7 +73,7 @@ with st.sidebar:
     st.subheader("PID Tuning (Advanced)")
     Kp = st.number_input("Kp (Proportional)", 80.0, 1000.0, 100.0)
     Ki = st.number_input("Ki (Integral)", 0.0001, 0.01, 0.001, format="%.4f")
-    Kd = st.number_input("Kd (Derivative)", 10000, 50000.0, 35000.0)
+    Kd = st.number_input("Kd (Derivative)", 10000.0, 50000.0, 35000.0)
 
 #simulation
 if st.button("🚀 Run Simulation", type="primary"):
@@ -176,6 +176,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
 
 
 
