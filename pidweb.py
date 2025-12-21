@@ -66,7 +66,7 @@ with st.sidebar:
         Volume = st.number_input("Volume of Room (m³)", 0, 1000, 10)
         mass = Volume*1.225
         C_heat = mass*1005
-    st.write("Thermal Mass (C) is", C_heat,"J⋅K⁻¹", format= "%.2f",help="This is the Heat Capacity of the Room!")
+    st.write("Thermal Mass (C) is", C_heat,"J⋅K⁻¹",help="This is the Heat Capacity of the Room!")
     Thickness = st.number_input("Thickness of Wall (cm)", 0.0, 1000.0, 20.0, help="Assuming Uniform Thickness across the Room")
     walltype = st.selectbox("Wall Type", ["Burnt Clay Bricks", "Cement Bricks", "Custom"], help ="Choose Burnt Clay if it's those classic red bricks which were used :)")
     if walltype == "Burnt Clay Bricks":
@@ -190,4 +190,5 @@ if st.button("🚀 Run Simulation", type="primary"):
     else:
         st.warning("⚠️ The PID used more energy. This usually happens if the Dumb thermostat target is set too low (causing discomfort).")
     if money_saved > 0:
+
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
