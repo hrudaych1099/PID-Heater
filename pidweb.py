@@ -27,16 +27,6 @@ class PIDController:
         output = P_term + I_term + D_term
         return output
 #web interface
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background-color: #3b3c3c; 
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 st.set_page_config(page_title="Smart Heater Simulator", layout="wide")
 st.title("PID vs. Thermostat - By Hruday")
 st.markdown("""
@@ -46,13 +36,6 @@ and a Smart PID Control Algorithm. P.S:- We shall use a basic 2kw Heater for thi
 
 #sidebar
 with st.sidebar:
-    st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {
-        background-color: #636464 ;
-    }
-    </style>
-    """, unsafe_allow_html=True)
     st.header("⚙️ Simulation Parameters")
     
     st.subheader("Room Physics")
@@ -192,5 +175,6 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
 
 
