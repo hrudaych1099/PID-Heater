@@ -26,12 +26,35 @@ class PIDController:
         
         output = P_term + I_term + D_term
         return output
+def settlingtime(time_history,temp_history, target, tolerance=0.5):
+    if abs(temp_history[-1]- target) > tolerance:
+        return None
+    settling_index = len(temp_history) - 1
+    for i in range(len(temp_history) - 1, -1, -1):
+        if abs(temp_history[i] - target) > tolerance:
+            settling_index = i + 1
+            break
+    return time_history[settling_index]
+def get_rate_of_change(T, power, T_ambient, R_insul, C_heat):
+    loss = (T - T_ambient) / R_insul
+    dT_dt = (power - loss) / C_heat
+    return dT_dt
+    
 #web interface
-st.set_page_config(page_title="Smart Heater Simulator", layout="wide")
+st.set_page_config(page_title="Smart Heater Simulator", layout="wide", page_icon="🔧")
 st.title("PID vs. Thermostat - By Hruday")
 st.markdown("""
-This app simulates the energy efficiency difference between a standard On/Off Hater uhm-uhm (Heater) 
-and a Smart PID Control Algorithm. P.S:- We shall use a basic 2kw Heater for this project, so don't input huge volumes required to heat an entire house :)
+**Engineering Project** | **Simulating Thermal Dynamics & Control Systems**
+""")
+st.markdown("""
+**→ Configure Simulation Parameters in the Sidebar 🔧**
+""")
+st.markdown("""
+→ This app simulates the energy efficiency difference between a standard On/Off Hater uhm-uhm (Heater) 
+and a Smart PID Control Algorithm.
+""")
+st.markdown("""
+P.S:- We shall use a basic 2kw Heater for this project, so don't input huge volumes required to heat an entire house :)
 """)
 
 #sidebar
@@ -49,7 +72,7 @@ with st.sidebar:
         Volume = st.number_input("Volume of Room (m³)", 0, 1000, 10)
         mass = Volume*1.225
         C_heat = mass*1005
-    st.metric(label="Thermal Mass (C) J⋅K⁻¹", value=f"{C_heat:.2f}")
+    st.markdown(f"**Thermal Mass (C):** `{C_heat:,.0f} J/K`", help="Energy required to raise room temp by 1°C")
     Thickness = st.number_input("Thickness of Wall (cm)", 0.0, 1000.0, 20.0, help="Assuming Uniform Thickness across the Room")
     walltype = st.selectbox("Wall Type", ["Burnt Clay Bricks", "Cement Bricks", "Custom"], help ="Choose Burnt Clay if it's those classic red bricks which were used :)")
     if walltype == "Burnt Clay Bricks":
@@ -60,10 +83,12 @@ with st.sidebar:
         R_thermal = st.number_input("Thermal Resistance/cm",0.0,10.0,0.1)
 
     R_insul = R_thermal*Thickness
-    st.metric(label="Thermal Resistance (R)", value=f"{R_insul:.2f} m²·K/W")
+    st.markdown(f"**Thermal Resistance(R):** `{R_insul:.2f} K/W`")
     T_ambient = st.number_input("Outside Temperature (°C)", -10.0, 20.0, 10.0)
     hours = st.number_input("Hours Run on Heater",0.0,24.0,6.0)
-    cost_per_kwh = st.number_input("Electricity Cost (₹/kWh)", 0.0, 100.0, 2.0)
+    time = st.slider("Time Steps (dt) seconds", 0.5,5.0,1.0, help="Lower Time Steps = Higher Simulation Times")
+    cost_per_kwh = st.number_input("Electricity Cost (₹/kWh)", 0.0, 100.0, 10.0)
+    st.write("---")
     st.subheader("Thermostat Settings")
     target_pid = st.slider("Your Desired Temperature °C", 18.0, 30.0, 25.0) 
     
@@ -79,7 +104,7 @@ with st.sidebar:
 if st.button("🚀 Run Simulation", type="primary"):
     
     # Constants
-    dt = 1.0
+    dt = time
     sim_hours = hours
     steps = int(3600 * sim_hours / dt)
     max_power = 2000.0
@@ -97,14 +122,17 @@ if st.button("🚀 Run Simulation", type="primary"):
     history_pid = []
     history_dumb = []
 
-    # Progress bar
+    #progress
     progress_bar = st.progress(0)
     for i in range(steps):
         p_pid = pid.update(target_pid, T_pid)
         p_pid = max(0, min(max_power, p_pid))
-        
-        loss_pid = (T_pid - T_ambient) / R_insul
-        T_pid += ((p_pid - loss_pid) / C_heat) * dt
+        #rk4 physics
+        k1 = get_rate_of_change(T_pid, p_pid, T_ambient, R_insul, C_heat)
+        k2 = get_rate_of_change(T_pid + 0.5*dt*k1, p_pid, T_ambient, R_insul, C_heat)
+        k3 = get_rate_of_change(T_pid + 0.5*dt*k2, p_pid, T_ambient, R_insul, C_heat)
+        k4 = get_rate_of_change(T_pid + dt*k3, p_pid, T_ambient, R_insul, C_heat)
+        T_pid += (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
         energy_pid += p_pid * dt
         if T_dumb < (target_dumb - hysteresis):
             dumb_on = True
@@ -112,9 +140,11 @@ if st.button("🚀 Run Simulation", type="primary"):
             dumb_on = False
         
         p_dumb = max_power if dumb_on else 0.0
-        
-        loss_dumb = (T_dumb - T_ambient) / R_insul
-        T_dumb += ((p_dumb - loss_dumb) / C_heat) * dt
+        k1 = get_rate_of_change(T_dumb, p_dumb, T_ambient, R_insul, C_heat)
+        k2 = get_rate_of_change(T_dumb + 0.5*dt*k1, p_dumb, T_ambient, R_insul, C_heat)
+        k3 = get_rate_of_change(T_dumb + 0.5*dt*k2, p_dumb, T_ambient, R_insul, C_heat)
+        k4 = get_rate_of_change(T_dumb + dt*k3, p_dumb, T_ambient, R_insul, C_heat)
+        T_dumb += (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
         energy_dumb += p_dumb * dt
         
         #storing data
@@ -127,6 +157,7 @@ if st.button("🚀 Run Simulation", type="primary"):
             progress_bar.progress(i / steps)
             
     progress_bar.progress(100)
+    settling_time = settlingtime(history_time, history_pid, target_pid, tolerance=0.5)
 
     #results
     kwh_pid = energy_pid / 3600000
@@ -135,14 +166,17 @@ if st.button("🚀 Run Simulation", type="primary"):
 
     #metrics
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Free-Use Heater Usage", f"{kwh_dumb:.2f} kWh")
     col2.metric("Smart PID Usage", f"{kwh_pid:.2f} kWh")
     if savings > 0:
         col3.metric("Energy Savings", f"{savings:.1f} %", delta=f"{savings:.1f} %", delta_color="normal") 
     else:
         col3.metric("Energy Savings", f"{savings:.1f} %", delta=f"{savings:.1f} %", delta_color="off") 
-
+    if settling_time:
+        col4.metric("Settling Time", f"{settling_time:.0f} mins", help="Time to stabilize within 0.1°C of Target Temperature")
+    else:
+        col4.metric("Settling Time", "Not Settled", help="System never stabilized within tolerance")
     #plot
     fig, ax = plt.subplots(figsize=(10, 5))
     fig.patch.set_alpha(0.0)
@@ -164,7 +198,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     ax.set_ylabel('Temperature (°C)')
     ax.legend(facecolor='#b9b9b9', labelcolor='white')
     ax.grid(True, alpha=0.3)
-    money_saved = (kwh_dumb - kwh_pid) * cost_per_kwh * (30 * 24 / sim_hours) #for 1 monthh
+    money_saved = (kwh_dumb - kwh_pid) * cost_per_kwh * (30 * 24 / sim_hours) #for 1 month
     
     st.pyplot(fig)
     
