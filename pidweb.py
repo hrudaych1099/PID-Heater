@@ -86,7 +86,7 @@ with st.sidebar:
     st.markdown(f"**Thermal Resistance(R):** `{R_insul:.2f} K/W`")
     T_ambient = st.number_input("Outside Temperature (°C)", -10.0, 20.0, 10.0)
     hours = st.number_input("Hours Run on Heater",0.0,24.0,6.0)
-    time = st.slider("Time Steps (dt) seconds", 0.5,10.0,5.0, help="Lower Time Steps = Higher Simulation Times")
+    time = st.slider("Time Steps (dt) seconds", 0.5,10.0,1.0, help="Lower Time Steps = Higher Simulation Times")
     cost_per_kwh = st.number_input("Electricity Cost (₹/kWh)", 0.0, 100.0, 10.0)
     st.write("---")
     st.subheader("Thermostat Settings")
@@ -210,6 +210,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
 
 
 
