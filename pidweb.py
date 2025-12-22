@@ -141,7 +141,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     if savings > 0:
         col3.metric("Energy Savings", f"{savings:.1f} %", delta=f"{savings:.1f} %", delta_color="normal") 
     else:
-        col3.metric("Energy Savings", f"{savings:.1f} %", delta=f"{savings:.1f} %", delta_color="inverse") 
+        col3.metric("Energy Savings", f"{savings:.1f} %", delta=f"{savings:.1f} %", delta_color="off") 
 
     #plot
     fig, ax = plt.subplots(figsize=(10, 5))
@@ -176,6 +176,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
+
 
 
 
