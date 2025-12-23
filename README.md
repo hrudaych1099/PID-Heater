@@ -15,7 +15,7 @@
 
 ## Demo
 
-![GIF](PID-videoeditedbetter(1).gif)
+![GIF](reqgiffile.gif)
 
 ## Physics Behind Model
 
