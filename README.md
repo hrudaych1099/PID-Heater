@@ -15,7 +15,7 @@
 
 ## Demo
 
-![GIF](PID-videoeditedbetter (1).gif)
+![GIF](https://github.com/hrudaych1099/PID-Heater/blob/main/PID-videoeditedbetter%20(1).gif)
 
 ## Physics Behind Model
 
