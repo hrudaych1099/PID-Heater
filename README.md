@@ -15,6 +15,8 @@
 
 ## Demo
 
+![Papermark Welcome GIF](PID-videoeditedbetter(1).gif)
+
 ## Physics Behind Model
 
 The simulation models a standard room using 4th Order Runge-Kutta (RK4) over discrete time steps ($dt$).
