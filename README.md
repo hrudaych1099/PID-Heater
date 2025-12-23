@@ -20,7 +20,7 @@
 ## Physics Behind Model
 
 The simulation models a standard room using 4th Order Runge-Kutta (RK4) over discrete time steps ($dt$).
- - Using a physics-based Python simulation, we modelled a thermal system with Newton’s Law of Cooling. The results demonstrate that while traditional thermostats suffer from "comfort drift" and overshoot, a tuned PID controller maintains target temperature with zero steady-state error. Furthermore, when normalized for comfort (minimum service level), the PID controller achieved upto 25% reduction in energy consumption compared to the hysteresis-based approach.
+ - Using a physics-based Python simulation, we modelled a thermal system with Newton’s Law of Cooling. The results demonstrate that while traditional thermostats suffer from "comfort drift" and overshoot, a tuned PID controller maintains target temperature with zero steady-state error. Furthermore, when normalized for comfort (minimum service level), the PID controller achieved upto **25% reduction** in energy consumption compared to the hysteresis-based approach.
 
 ## Governing Equations
  - Heat Loss: Modeled via Newton's Law of Cooling:
