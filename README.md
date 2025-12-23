@@ -15,7 +15,7 @@
 
 ## Demo
 
-![Papermark Welcome GIF](PID-videoeditedbetter(1).gif)
+![Papermark Welcome GIF](PID-videoeditedbetter (1).gif)
 
 ## Physics Behind Model
 
