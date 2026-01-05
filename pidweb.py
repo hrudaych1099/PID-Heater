@@ -251,12 +251,20 @@ if st.button("🚀 Run Simulation", type="primary"):
     elif settling_time > (sim_hours * 60 * 0.5):
         suggestions.append("ℹ️ **Slow Response:** The system takes a long time to heat up.")
         suggestions.append("👉 **Tuning Tip:** Increase **Kp (Proportional)** to make the heater react faster to temperature drops.")
-
-    #Analyze Insulation
+    #comfort
+    elif comfort_improvement < 0:
+        suggestions.append(f"📉 **Comfort Issue:** The PID is technically performing worse than the thermostat ({-comfort_improvement:.1f}% worse score).")
+        
+        if settling_time and settling_time > 30:
+            suggestions.append("👉 **Reason:** Your PID is **Overdamped** (Too Slow). It takes too long ({:.0f} mins) to heat the room initially, which ruins the average comfort score.".format(settling_time))
+            suggestions.append("🔧 **Fix:** Increase **Kp (Proportional)** to make the heater attack the cold room more aggressively at the start.")
+        else:
+            suggestions.append("👉 **Reason:** The Thermostat might be set closer to the target than the PID could maintain.")
+    #Insulation
     if R_insul < 2.0 and savings < 10:
         suggestions.append("💡 **Infrastructure Insight:** Your wall insulation is very poor. No control algorithm can fix bad physics. Improving insulation (higher R-value) will save more energy than any PID tuning.")
 
-    #Display Suggestions
+    # Display Suggestions
     if suggestions:
         for sug in suggestions:
             st.info(sug)
