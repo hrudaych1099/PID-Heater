@@ -11,7 +11,7 @@
 
 - **Customise Multiple Features:** From your room size, wall thickness, to the type of wall present in your home, for the perfect simulations which match real-time properties 
 - **Custom Tuning:** Tune the PID from the Advanced Tuning Sidebar to get better (or maybe worse) results.
-- **Analytics:** You will be able to check the % Energy Saved, Settling Time, Comfort Improvement, amount saved per month and also the time taken for the PID Simulated Heater to attain comfort temperature!
+- **Analytics:** You will be able to check the % Energy Saved, Settling Time, Comfort Improvement, Amount saved per month and a Power Application Graph!
 - **Suggestions:** You will receive suggestions based on the current simulation to improve the efficiency/comfort %. From settings suggestions to infrastructure suggestions, you will be receiving a fix! 
 ## Demo
 
