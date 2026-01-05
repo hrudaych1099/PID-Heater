@@ -1,5 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import numpy as np
 class PIDController:
     def __init__(self, Kp, Ki, Kd, dt):
         self.Kp = Kp
@@ -85,8 +86,9 @@ with st.sidebar:
     R_insul = R_thermal*Thickness
     st.markdown(f"**Thermal Resistance(R):** `{R_insul:.2f} K/W`")
     T_ambient = st.number_input("Outside Temperature (°C)", -10.0, 20.0, 10.0)
+    power = st
     hours = st.number_input("Hours Run on Heater",0.0,24.0,6.0)
-    time = st.slider("Time Steps (dt) seconds", 0.5,10.0,1.0, help="Lower Time Steps = Higher Simulation Times")
+    time = st.slider("Time Steps (dt) seconds", 0.5,5.0,1.0, help="Lower Time Steps = Higher Simulation Times")
     cost_per_kwh = st.number_input("Electricity Cost (₹/kWh)", 0.0, 100.0, 10.0)
     st.write("---")
     st.subheader("Thermostat Settings")
@@ -107,7 +109,7 @@ if st.button("🚀 Run Simulation", type="primary"):
     dt = time
     sim_hours = hours
     steps = int(3600 * sim_hours / dt)
-    max_power = 2000.0
+    max_power = 2000
     hysteresis = 1.5
 
 
@@ -121,6 +123,8 @@ if st.button("🚀 Run Simulation", type="primary"):
     history_time = []
     history_pid = []
     history_dumb = []
+    history_power_pid = []
+    history_power_dumb = []
 
     #progress
     progress_bar = st.progress(0)
@@ -148,10 +152,12 @@ if st.button("🚀 Run Simulation", type="primary"):
         energy_dumb += p_dumb * dt
         
         #storing data
-        if i % 60 == 0: # Save every minute
+        if i % 60 == 0: #Save every minute
             history_time.append(i/60)
             history_pid.append(T_pid)
             history_dumb.append(T_dumb)
+            history_power_pid.append(p_pid)
+            history_power_dumb.append(p_dumb)
         
         if i % (steps // 10) == 0:
             progress_bar.progress(i / steps)
@@ -164,9 +170,20 @@ if st.button("🚀 Run Simulation", type="primary"):
     kwh_dumb = energy_dumb / 3600000
     savings = ((kwh_dumb - kwh_pid) / kwh_dumb) * 100
 
+    min_len = min(len(history_pid), len(history_dumb))
+    pid_arr = np.array(history_pid[:min_len])
+    dumb_arr = np.array(history_dumb[:min_len])
+    target_arr = np.full(min_len, target_pid)
+    
+    # RMSE Calculation
+    rmse_pid = np.sqrt(np.mean((pid_arr - target_arr)**2))
+    rmse_dumb = np.sqrt(np.mean((dumb_arr - target_arr)**2))
+    
+    # Comfort Improvement %
+    comfort_improvement = ((rmse_dumb - rmse_pid) / rmse_dumb) * 100 if rmse_dumb != 0 else 0
     #metrics
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     col1.metric("Free-Use Heater Usage", f"{kwh_dumb:.2f} kWh")
     col2.metric("Smart PID Usage", f"{kwh_pid:.2f} kWh")
     if savings > 0:
@@ -177,41 +194,77 @@ if st.button("🚀 Run Simulation", type="primary"):
         col4.metric("Settling Time", f"{settling_time:.0f} mins", help="Time to stabilize within 0.1°C of Target Temperature")
     else:
         col4.metric("Settling Time", "Not Settled", help="System never stabilized within tolerance")
+    col5.metric("Comfort Improvement", f"{comfort_improvement:.1f} %", 
+                help="How much closer PID stayed to the target compared to the Thermostat (RMSE)",
+                delta="Better Comfort" if comfort_improvement > 0 else "Worse Comfort")
     #plot
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
     fig.patch.set_alpha(0.0)
-    ax.patch.set_alpha(0.0)
-    ax.spines['bottom'].set_color('#403f3f')
-    ax.spines['top'].set_color('#403f3f') 
-    ax.spines['right'].set_color('#403f3f')
-    ax.spines['left'].set_color('#403f3f')
-    ax.tick_params(axis='x', colors='#403f3f')
-    ax.tick_params(axis='y', colors='#403f3f')
-    ax.yaxis.label.set_color('#403f3f')
-    ax.xaxis.label.set_color('#403f3f')
-    ax.title.set_color('#403f3f')
+    for ax in [ax1, ax2]:
+        ax.patch.set_alpha(0.0)
+        ax.spines['bottom'].set_color('#403f3f')
+        ax.spines['top'].set_color('#403f3f') 
+        ax.spines['right'].set_color('#403f3f')
+        ax.spines['left'].set_color('#403f3f')
+        ax.tick_params(axis='x', colors='#403f3f')
+        ax.tick_params(axis='y', colors='#403f3f')
+        ax.yaxis.label.set_color('#403f3f')
+        ax.xaxis.label.set_color('#403f3f')
+        ax.title.set_color('#403f3f')
+        ax.grid(True, alpha=0.3)
 
-    ax.plot(history_time, history_dumb, 'r--', label=f'Normal Thermostat (Set {target_dumb}°C)', alpha=0.7) # Increased alpha for visibility
-    ax.plot(history_time, history_pid, 'c-', label=f'Smart PID (Set {target_pid}°C)', linewidth=2) # Cyan is better than Blue on dark backgrounds
-    ax.axhline(y=target_pid, color='g', linestyle=':', label='Comfort Zone')
-    ax.set_xlabel('Time (Minutes)')
-    ax.set_ylabel('Temperature (°C)')
-    ax.legend(facecolor='#b9b9b9', labelcolor='white')
-    ax.grid(True, alpha=0.3)
+    #Temperaturevstime
+    ax1.plot(history_time, history_dumb, 'r--', label=f'Normal Thermostat', alpha=0.7)
+    ax1.plot(history_time, history_pid, 'c-', label=f'Smart PID', linewidth=2) 
+    ax1.axhline(y=target_pid, color='g', linestyle=':', label='Target Temp')
+    ax1.set_ylabel('Temperature (°C)')
+    ax1.legend(facecolor='#b9b9b9', labelcolor='white', loc='lower right')
+    ax1.set_title("Room Temperature Response")
+
+    #power applied plotting
+    ax2.plot(history_time, history_power_dumb, 'r--', label='Thermostat Power', alpha=0.5)
+    ax2.plot(history_time, history_power_pid, 'c-', label='PID Power', linewidth=1.5)
+    ax2.set_xlabel('Time (Minutes)')
+    ax2.set_ylabel('Heater Power (Watts)')
+    ax2.fill_between(history_time, history_power_pid, color='cyan', alpha=0.1) # Cool fill effect
+    ax2.legend(facecolor='#b9b9b9', labelcolor='white', loc='upper right')
+    ax2.set_title("Power Consumption")
     money_saved = (kwh_dumb - kwh_pid) * cost_per_kwh * (30 * 24 / sim_hours) #for 1 month
-    
     st.pyplot(fig)
+    st.markdown("---")
+    st.subheader("Analysis & Suggestions :")
     
-    
-    if savings > 0:
-        st.success(f"✅ Success! The PID controller maintained comfort while using **{savings:.1f}% less energy**.")
+    suggestions = []
+
+    #savings vs temp
+    if savings < 0:
+        avg_dumb_temp = np.mean(dumb_arr)
+        if avg_dumb_temp < (target_pid - 0.5):
+            suggestions.append(f"⚠️ **False Economy Detected:** The Thermostat saved energy, but only because it let the room get cold (Avg Temp: {avg_dumb_temp:.1f}°C). The PID maintained the target {target_pid}°C accurately. To make a fair comparison, **increase the Thermostat setting** in the sidebar.")
+        else:
+            suggestions.append("ℹ️ **High PID Cost:** The PID is aggressive. Try reducing **Kp** slightly to prevent over-reaction to small errors.")
+
+    #settling time
+    if not settling_time:
+        suggestions.append("⚠️ **Unstable System:** The PID never settled. It is likely oscillating.")
+        suggestions.append("👉 **Tuning Tip:** Increase **Kd (Derivative)** to add 'damping' (braking force) to the system.")
+    elif settling_time > (sim_hours * 60 * 0.5):
+        suggestions.append("ℹ️ **Slow Response:** The system takes a long time to heat up.")
+        suggestions.append("👉 **Tuning Tip:** Increase **Kp (Proportional)** to make the heater react faster to temperature drops.")
+
+    #Analyze Insulation
+    if R_insul < 2.0 and savings < 10:
+        suggestions.append("💡 **Infrastructure Insight:** Your wall insulation is very poor. No control algorithm can fix bad physics. Improving insulation (higher R-value) will save more energy than any PID tuning.")
+
+    #Display Suggestions
+    if suggestions:
+        for sug in suggestions:
+            st.info(sug)
     else:
-        st.warning("⚠️ The PID used more energy. This usually happens if the Dumb thermostat target is set too low (causing discomfort).")
+        st.success("✅ **System Optimized:** The PID is delivering excellent comfort with efficient power usage. No changes recommended!")
     if money_saved > 0:
 
         st.info(f"💰 At this rate, you would save ₹**{money_saved:.2f} per month**.")
-
-
 
 
 
